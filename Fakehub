@@ -1,0 +1,138 @@
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+local savedPosition = nil
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "SaveTP_Menu"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+-- Nút mở
+local open = Instance.new("TextButton")
+open.Size = UDim2.fromOffset(55, 55)
+open.Position = UDim2.new(0, 15, 0.5, -27)
+open.Text = "☰"
+open.TextScaled = true
+open.Parent = gui
+
+-- Menu
+local menu = Instance.new("Frame")
+menu.Size = UDim2.fromOffset(320, 230)
+menu.Position = UDim2.new(0.5, -160, 0.5, -115)
+menu.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+menu.Parent = gui
+
+-- Thanh kéo
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, -50, 0, 50)
+title.Text = "SAVE TP"
+title.TextScaled = true
+title.TextColor3 = Color3.new(1, 1, 1)
+title.BackgroundTransparency = 1
+title.Parent = menu
+
+-- X
+local close = Instance.new("TextButton")
+close.Size = UDim2.fromOffset(45, 45)
+close.Position = UDim2.new(1, -48, 0, 3)
+close.Text = "X"
+close.TextScaled = true
+close.Parent = menu
+
+-- Save
+local save = Instance.new("TextButton")
+save.Size = UDim2.new(1, -30, 0, 60)
+save.Position = UDim2.fromOffset(15, 65)
+save.Text = "📍 LƯU VỊ TRÍ"
+save.TextScaled = true
+save.Parent = menu
+
+-- TP
+local tp = Instance.new("TextButton")
+tp.Size = UDim2.new(1, -30, 0, 60)
+tp.Position = UDim2.fromOffset(15, 140)
+tp.Text = "🚀 TP ĐẾN VỊ TRÍ"
+tp.TextScaled = true
+tp.Parent = menu
+
+-- Kéo menu bằng mobile / PC
+local dragging = false
+local dragStart
+local startPos
+
+title.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch
+    or input.UserInputType == Enum.UserInputType.MouseButton1 then
+
+        dragging = true
+        dragStart = input.Position
+        startPos = menu.Position
+    end
+end)
+
+UIS.InputChanged:Connect(function(input)
+    if dragging and (
+        input.UserInputType == Enum.UserInputType.Touch
+        or input.UserInputType == Enum.UserInputType.MouseMovement
+    ) then
+
+        local delta = input.Position - dragStart
+
+        menu.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+UIS.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch
+    or input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end)
+
+-- Đóng
+close.MouseButton1Click:Connect(function()
+    menu.Visible = false
+    open.Visible = true
+end)
+
+-- Mở
+open.MouseButton1Click:Connect(function()
+    menu.Visible = true
+    open.Visible = false
+end)
+
+-- Lưu vị trí
+save.MouseButton1Click:Connect(function()
+    local character = player.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+
+    if root then
+        savedPosition = root.CFrame
+        save.Text = "✓ ĐÃ LƯU"
+
+        task.wait(1)
+        save.Text = "📍 LƯU VỊ TRÍ"
+    end
+end)
+
+-- TP về vị trí đã lưu
+tp.MouseButton1Click:Connect(function()
+    local character = player.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+
+    if root and savedPosition then
+        root.CFrame = savedPosition
+    else
+        tp.Text = "CHƯA CÓ VỊ TRÍ!"
+
+        task.wait(1)
+        tp.Text = "🚀 TP ĐẾN VỊ TRÍ"
+    end
+end)
